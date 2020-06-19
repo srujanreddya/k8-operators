@@ -1,1 +1,1 @@
-# k8-operators
+# Simple GO code
