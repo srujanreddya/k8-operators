@@ -2,8 +2,11 @@ FROM bluedata/centos7:latest
 
 ## Installing and configuring PostgresSQL Database
 
-RUN rpm -Uvh https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
-    yum -y install postgresql96-server postgresql96-contrib && \
+RUN wget https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
+    rpm -Uvh pgdg-redhat-repo-latest.noarch.rpm
+
+
+RUN yum -y install postgresql96-server postgresql96-contrib && \
     /usr/pgsql-9.6/bin/postgresql96-setup initdb
 
 COPY pg_hba.conf /var/lib/pgsql/9.6/data/pg_hba.conf
