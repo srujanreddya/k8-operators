@@ -1,0 +1,17 @@
+[Unit]
+Description=Concourse CI web server
+After=postgresql-9.6.service
+
+[Service]
+Type=simple
+User=concourse
+Group=concourse
+Restart=on-failure
+EnvironmentFile=/opt/concourse/web.env
+ExecStart=/usr/bin/concourse web
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=concourse_web
+
+[Install]
+WantedBy=multi-user.target

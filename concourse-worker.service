@@ -1,0 +1,17 @@
+[Unit]
+Description=Concourse CI worker process
+After=concourse-web.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+Restart=on-failure
+EnvironmentFile=/opt/concourse/worker.env
+ExecStart=/usr/bin/concourse worker
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=concourse_worker
+
+[Install]
+WantedBy=multi-user.target

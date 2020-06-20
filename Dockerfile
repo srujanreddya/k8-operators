@@ -1,31 +1,45 @@
-# Use the official Golang image to create a build artifact.
-# This is based on Debian and sets the GOPATH to /go.
-# https://hub.docker.com/_/golang
-FROM golang:1.13 as builder
+FROM bluedata/centos7:latest
 
-# Create and change to the app directory.
-WORKDIR /app
+RUN yum update -y
 
-# Retrieve application dependencies using go modules.
-# Allows container builds to reuse downloaded dependencies.
-COPY go.* ./
-RUN go mod download
+## Installing and configuring PostgresSQL Database
 
-# Copy local code to the container image.
-COPY . ./
+RUN rpm -Uvh https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
+    yum -y install postgresql96-server postgresql96-contrib && \
+    /usr/pgsql-9.6/bin/postgresql96-setup initdb
 
-# Build the binary.
-# -mod=readonly ensures immutable go.mod and go.sum in container builds.
-RUN CGO_ENABLED=0 GOOS=linux go build -mod=readonly -v -o server
+COPY pg_hba.conf /var/lib/pgsql/9.6/data/pg_hba.conf
 
-# Use the official Alpine image for a lean production container.
-# https://hub.docker.com/_/alpine
-# https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM alpine:3
-RUN apk add --no-cache ca-certificates
+RUN systemctl enable postgresql-9.6 && \
+    systemctl start postgresql-9.6 && \
+    echo postgres:postgres | chpasswd && \
+    sudo -Hu postgres createuser concourse && \
+    sudo -Hu postgres psql -c "ALTER USER concourse WITH ENCRYPTED password 'concourse';" && \
+    sudo -Hu postgres psql -c "CREATE DATABASE concourse OWNER concourse;"
 
-# Copy the binary to the production image from the builder stage.
-COPY --from=builder /app/server /server
 
-# Run the web service on container startup.
-CMD ["/server"]
+## Downloading and installing Concourse CI
+
+RUN wget https://github.com/concourse/concourse/releases/download/v3.4.1/concourse_linux_amd64 -O /usr/bin/concourse && \
+    wget https://github.com/concourse/concourse/releases/download/v3.4.1/fly_linux_amd64 -O /usr/bin/fly && \
+    chmod +x /usr/bin/concourse /usr/bin/fly
+
+## Generate and Setup RSA Keys
+RUN mkdir /opt/concourse && \
+    ssh-keygen -t rsa -q -N '' -f /opt/concourse/session_signing_key && \
+    ssh-keygen -t rsa -q -N '' -f /opt/concourse/tsa_host_key && \
+    ssh-keygen -t rsa -q -N '' -f /opt/concourse/worker_key && \
+    cp /opt/concourse/worker_key.pub /opt/concourse/authorized_worker_keys
+
+
+## Configuring Environment and Systemd Service
+
+COPY web.env /opt/concourse/
+COPY worker.env /opt/concourse
+
+RUN chmod 600 /opt/concourse/*.env && \
+    adduser --system concourse && \
+    chown -R concourse:concourse /opt/concourse
+
+COPY concourse-worker.service /etc/systemd/system/concourse-worker.service
+COPY concourse-web.service /etc/systemd/system/concourse-web.service
