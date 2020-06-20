@@ -1,1 +1,1 @@
-# Simple GO code
+# Councourse CI KD application

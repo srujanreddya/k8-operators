@@ -1,7 +1,5 @@
 FROM bluedata/centos7:latest
 
-RUN yum update -y
-
 ## Installing and configuring PostgresSQL Database
 
 RUN rpm -Uvh https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
