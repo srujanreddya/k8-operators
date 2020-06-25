@@ -49,3 +49,9 @@ RUN chmod 600 /opt/concourse/*.env && \
 
 COPY concourse-worker.service /etc/systemd/system/concourse-worker.service
 COPY concourse-web.service /etc/systemd/system/concourse-web.service
+
+COPY appconfig /tmp/appconfig
+
+RUN tar czf appconfig.tgz /tmp/appconfig && \
+    mkdir /opt/configscripts && \
+    mv appconfig.tgz /opt/configscripts/
