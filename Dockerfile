@@ -8,20 +8,20 @@ RUN wget https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/
 
 RUN yum -y install postgresql96-server postgresql96-contrib
 
-RUN /usr/pgsql-9.6/bin/postgresql96-setup initdb && \
-    echo "listen_addresses = '*'" >> /var/lib/pgsql/9.6/data/postgresql.conf && \
-    sed -i -e "s/ident$/trust/g" /var/lib/pgsql/9.6/data/pg_hba.conf && \
-    sed -i -e "s/127\.0\.0\.1\/32/0\.0\.0\.0\/0/g" /var/lib/pgsql/9.6/data/pg_hba.conf && \
-    sed -i -e "s/max_connections = 100/max_connections = 200/g" /var/lib/pgsql/9.6/data/postgresql.conf && \
-    sed -i -e "s/shared_buffers = 128MB/shared_buffers = 512MB/g" /var/lib/pgsql/9.6/data/postgresql.conf && \
+#RUN /usr/pgsql-9.6/bin/postgresql96-setup initdb && \
+#    echo "listen_addresses = '*'" >> /var/lib/pgsql/9.6/data/postgresql.conf && \
+#    sed -i -e "s/ident$/trust/g" /var/lib/pgsql/9.6/data/pg_hba.conf && \
+#    sed -i -e "s/127\.0\.0\.1\/32/0\.0\.0\.0\/0/g" /var/lib/pgsql/9.6/data/pg_hba.conf && \
+#    sed -i -e "s/max_connections = 100/max_connections = 200/g" /var/lib/pgsql/9.6/data/postgresql.conf && \
+#    sed -i -e "s/shared_buffers = 128MB/shared_buffers = 512MB/g" /var/lib/pgsql/9.6/data/postgresql.conf && \
 
 
-RUN systemctl enable postgresql-9.6 && \
-    systemctl start postgresql-9.6 && \
-    echo postgres:postgres | chpasswd && \
-    su postgres -c "createuser concourse" && \
-    su postgres -c "psql -c \"ALTER USER concourse WITH ENCRYPTED password 'concourse'\"" && \
-    su postgres "psql -c \"CREATE DATABASE concourse OWNER concourse\""
+#RUN systemctl enable postgresql-9.6 && \
+#    systemctl start postgresql-9.6 && \
+#    echo postgres:postgres | chpasswd && \
+#    su postgres -c "createuser concourse" && \
+#    su postgres -c "psql -c \"ALTER USER concourse WITH ENCRYPTED password 'concourse'\"" && \
+#    su postgres "psql -c \"CREATE DATABASE concourse OWNER concourse\""
 
 
 ## Downloading and installing Concourse CI
